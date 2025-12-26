@@ -37,14 +37,19 @@ RUN dotnet build "Peo.Web.Spa.csproj" \
     --no-restore
 
 # Publish stage - Blazor WASM
-FROM build AS publish
+FROM restore AS publish
 ARG BUILD_CONFIGURATION
 ARG APP_VERSION
+WORKDIR /src
 
+# Copy all source code
+COPY ["src/Peo.Web.Spa/", "src/Peo.Web.Spa/"]
+
+# Publish directly (without separate build step)
+WORKDIR "/src/src/Peo.Web.Spa"
 RUN dotnet publish "Peo.Web.Spa.csproj" \
     -c ${BUILD_CONFIGURATION} \
     -o /app/publish \
-    --no-build \
     --no-restore \
     /p:Version=${APP_VERSION}
 

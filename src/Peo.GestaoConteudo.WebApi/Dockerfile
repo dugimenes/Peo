@@ -60,14 +60,19 @@ RUN dotnet build "Peo.GestaoConteudo.WebApi.csproj" \
     --runtime linux-musl-x64
 
 # Publish stage
-FROM build AS publish
+FROM restore AS publish
 ARG BUILD_CONFIGURATION
 ARG APP_VERSION
+WORKDIR /src
 
+# Copy all source code
+COPY ["src/", "src/"]
+
+# Publish directly (without separate build step)
+WORKDIR "/src/src/Peo.GestaoConteudo.WebApi"
 RUN dotnet publish "Peo.GestaoConteudo.WebApi.csproj" \
     -c ${BUILD_CONFIGURATION} \
     -o /app/publish \
-    --no-build \
     --no-restore \
     --runtime linux-musl-x64 \
     --self-contained false \
