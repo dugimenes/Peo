@@ -27,10 +27,17 @@ jobs:
       run: dotnet restore 
     - name: Build
       run: dotnet build --no-restore -WarnAsError
+
+    - name: Run Linter (dotnet format)
+      run: dotnet format --verify-no-changes --verbosity diagnostic
+      continue-on-error: true
+
     - name: Install dotCover
       run: dotnet tool install --global JetBrains.dotCover.CommandLineTools --version 2025.1.5
+
     - name: Test + code coverage
-      run: dotCover cover-dotnet --output report.html --ReportType HTML --Filters="+:module=Peo.*" -- test 
+      run: dotCover cover-dotnet --output report.html --ReportType HTML --Filters="+:module=Peo.*" -- test
+
     - name: Archive code coverage results
       uses: actions/upload-artifact@v4
       with:
