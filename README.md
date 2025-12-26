@@ -1,4 +1,4 @@
-[![.NET](https://github.com/jonataspc/MBA-Peo-microservices/actions/workflows/dotnet.yml/badge.svg)](https://github.com/jonataspc/MBA-Peo-microservices/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/dugimenes/Peo/actions/workflows/dotnet.yml/badge.svg)](https://github.com/dugimenes/Peo/actions/workflows/dotnet.yml)
 
 # **PEO - Plataforma de Educação Online**
 
@@ -13,7 +13,7 @@ Além disso são aplicados conceitos de devops, como Git/GitHub, Docker, GitHub 
 
 
 ### **Autor**
-- **Jonatas Cruz**
+- **Eduardo Gimenes**
 
 ## **Proposta do Projeto**
 

@@ -39,7 +39,6 @@ RUN dotnet build "Peo.Web.Spa.csproj" \
 # Publish stage - Blazor WASM
 FROM restore AS publish
 ARG BUILD_CONFIGURATION
-ARG APP_VERSION
 WORKDIR /src
 
 # Copy all source code
@@ -50,8 +49,7 @@ WORKDIR "/src/src/Peo.Web.Spa"
 RUN dotnet publish "Peo.Web.Spa.csproj" \
     -c ${BUILD_CONFIGURATION} \
     -o /app/publish \
-    --no-restore \
-    /p:Version=${APP_VERSION}
+    --no-restore
 
 # Final stage - Nginx for static hosting
 FROM nginx:alpine AS final

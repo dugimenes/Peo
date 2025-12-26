@@ -62,7 +62,6 @@ RUN dotnet build "Peo.Identity.WebApi.csproj" \
 # Publish stage
 FROM restore AS publish
 ARG BUILD_CONFIGURATION
-ARG APP_VERSION
 WORKDIR /src
 
 # Copy all source code
@@ -76,8 +75,7 @@ RUN dotnet publish "Peo.Identity.WebApi.csproj" \
     --no-restore \
     --runtime linux-musl-x64 \
     --self-contained false \
-    /p:UseAppHost=false \
-    /p:Version=${APP_VERSION}
+    /p:UseAppHost=false
 
 # Final stage
 FROM base AS final
