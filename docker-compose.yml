@@ -1,0 +1,225 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: peo-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Peo@2025!Strong"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Peo@2025!Strong" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - peo-network
+
+  # Identity API
+  identity-api:
+    build:
+      context: .
+      dockerfile: src/Peo.Identity.WebApi/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_VERSION: 1.0.0
+    container_name: peo-identity-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PeoIdentityDb;User Id=sa;Password=Peo@2025!Strong;TrustServerCertificate=True;
+      - JwtOptions__Issuer=http://identity-api:8080
+      - JwtOptions__Audience=http://localhost:8080
+      - JwtOptions__SecretKey=PEO-SECRET-KEY-2025-SUPER-STRONG-MINIMUM-32-CHARS
+      - JwtOptions__ExpirationMinutes=60
+    ports:
+      - "5001:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - peo-network
+
+  # Gestao Conteudo API
+  gestao-conteudo-api:
+    build:
+      context: .
+      dockerfile: src/Peo.GestaoConteudo.WebApi/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_VERSION: 1.0.0
+    container_name: peo-gestao-conteudo-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PeoGestaoConteudoDb;User Id=sa;Password=Peo@2025!Strong;TrustServerCertificate=True;
+      - JwtOptions__Issuer=http://identity-api:8080
+      - JwtOptions__Audience=http://localhost:8080
+      - JwtOptions__SecretKey=PEO-SECRET-KEY-2025-SUPER-STRONG-MINIMUM-32-CHARS
+    ports:
+      - "5002:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      identity-api:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - peo-network
+
+  # Gestao Alunos API
+  gestao-alunos-api:
+    build:
+      context: .
+      dockerfile: src/Peo.GestaoAlunos.WebApi/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_VERSION: 1.0.0
+    container_name: peo-gestao-alunos-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PeoGestaoAlunosDb;User Id=sa;Password=Peo@2025!Strong;TrustServerCertificate=True;
+      - JwtOptions__Issuer=http://identity-api:8080
+      - JwtOptions__Audience=http://localhost:8080
+      - JwtOptions__SecretKey=PEO-SECRET-KEY-2025-SUPER-STRONG-MINIMUM-32-CHARS
+    ports:
+      - "5003:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      identity-api:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - peo-network
+
+  # Faturamento API
+  faturamento-api:
+    build:
+      context: .
+      dockerfile: src/Peo.Faturamento.WebApi/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_VERSION: 1.0.0
+    container_name: peo-faturamento-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PeoFaturamentoDb;User Id=sa;Password=Peo@2025!Strong;TrustServerCertificate=True;
+      - JwtOptions__Issuer=http://identity-api:8080
+      - JwtOptions__Audience=http://localhost:8080
+      - JwtOptions__SecretKey=PEO-SECRET-KEY-2025-SUPER-STRONG-MINIMUM-32-CHARS
+      - PayPalOptions__ClientId=your-paypal-client-id
+      - PayPalOptions__Secret=your-paypal-secret
+      - PayPalOptions__Mode=sandbox
+    ports:
+      - "5004:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      identity-api:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - peo-network
+
+  # BFF API
+  bff-api:
+    build:
+      context: .
+      dockerfile: src/Peo.Web.Bff/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_VERSION: 1.0.0
+    container_name: peo-bff-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - JwtOptions__Issuer=http://identity-api:8080
+      - JwtOptions__Audience=http://localhost:8080
+      - JwtOptions__SecretKey=PEO-SECRET-KEY-2025-SUPER-STRONG-MINIMUM-32-CHARS
+      - IdentityApiClient__BaseUrl=http://identity-api:8080
+      - GestaoConteudoApiClient__BaseUrl=http://gestao-conteudo-api:8080
+      - GestaoAlunosApiClient__BaseUrl=http://gestao-alunos-api:8080
+      - FaturamentoApiClient__BaseUrl=http://faturamento-api:8080
+    ports:
+      - "5005:8080"
+    depends_on:
+      identity-api:
+        condition: service_healthy
+      gestao-conteudo-api:
+        condition: service_healthy
+      gestao-alunos-api:
+        condition: service_healthy
+      faturamento-api:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    networks:
+      - peo-network
+
+  # Web SPA
+  web-spa:
+    build:
+      context: .
+      dockerfile: src/Peo.Web.Spa/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_VERSION: 1.0.0
+    container_name: peo-web-spa
+    environment:
+      - BFF_URL=http://bff-api:8080
+    ports:
+      - "8080:80"
+    depends_on:
+      bff-api:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost/ || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - peo-network
+
+networks:
+  peo-network:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
+    driver: local

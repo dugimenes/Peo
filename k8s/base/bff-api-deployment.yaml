@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bff-api
+  namespace: peo-platform
+  labels:
+    app: bff-api
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bff-api
+  template:
+    metadata:
+      labels:
+        app: bff-api
+        tier: frontend
+    spec:
+      containers:
+      - name: bff-api
+        image: <DOCKER_USERNAME>/peo-bff-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: JwtOptions__SecretKey
+          valueFrom:
+            secretKeyRef:
+              name: peo-secrets
+              key: JWT_SECRET_KEY
+        envFrom:
+        - configMapRef:
+            name: peo-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bff-api-service
+  namespace: peo-platform
+  labels:
+    app: bff-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: bff-api
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http

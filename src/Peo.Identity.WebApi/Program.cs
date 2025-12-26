@@ -18,6 +18,7 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseAuthorization();
+app.MapDefaultEndpoints();
 app.MapEndpoints();
 
 await app.UseIdentityDbMigrationHelperAsync();

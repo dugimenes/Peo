@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: peo-config
+  namespace: peo-platform
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_URLS: "http://+:8080"
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "false"
+  DOTNET_RUNNING_IN_CONTAINER: "true"
+  TZ: "America/Sao_Paulo"
+
+  # JWT Configuration
+  JwtOptions__Issuer: "http://identity-api-service:8080"
+  JwtOptions__Audience: "http://localhost:8080"
+  JwtOptions__ExpirationMinutes: "60"
+
+  # Database Configuration
+  ConnectionStrings__DefaultConnection: "Server=sqlserver-service,1433;Database=PeoDb;User Id=sa;TrustServerCertificate=True;"
+
+  # Service URLs
+  IdentityApiClient__BaseUrl: "http://identity-api-service:8080"
+  GestaoConteudoApiClient__BaseUrl: "http://gestao-conteudo-api-service:8080"
+  GestaoAlunosApiClient__BaseUrl: "http://gestao-alunos-api-service:8080"
+  FaturamentoApiClient__BaseUrl: "http://faturamento-api-service:8080"
+
+  # PayPal Configuration
+  PayPalOptions__Mode: "sandbox"

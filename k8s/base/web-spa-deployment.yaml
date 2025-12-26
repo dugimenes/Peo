@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-spa
+  namespace: peo-platform
+  labels:
+    app: web-spa
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-spa
+  template:
+    metadata:
+      labels:
+        app: web-spa
+        tier: frontend
+    spec:
+      containers:
+      - name: web-spa
+        image: <DOCKER_USERNAME>/peo-web-spa:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-spa-service
+  namespace: peo-platform
+  labels:
+    app: web-spa
+spec:
+  type: LoadBalancer
+  selector:
+    app: web-spa
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
